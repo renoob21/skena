@@ -1,15 +1,22 @@
 use clap::Parser;
 use input::Args;
 pub use scanner::PortKind;
+use tokio;
+
+use crate::scanner::Scanner;
 
 
 mod input;
 mod scanner;
+mod prober;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
-    let scan_cfg = args.to_scan_config().unwrap();
+    let scanners = args.to_scanners().unwrap();
 
-    scan_cfg.scan();
+    for scn in scanners {
+        scn.print_result(scn.scan().await).await;
+    }
 }

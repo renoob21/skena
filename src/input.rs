@@ -2,7 +2,7 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::{scanner::ScanConfig, PortKind};
+use crate::{scanner::{ Scanner, TcpScanner}, PortKind};
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -17,7 +17,11 @@ pub struct Args {
     
     /// Port range to scan. Example: 1-100
     #[arg(long, short, conflicts_with="ports", value_parser=range_parser)]
-    pub range: Option<PortKind>
+    pub range: Option<PortKind>,
+
+    /// Perform banner grabbing
+    #[arg(long, short)]
+    pub banner: bool,
 }
 
 
@@ -38,8 +42,10 @@ fn range_parser(input: &str) -> Result<PortKind, String> {
     }
 }
 
+
+
 impl Args {
-    pub fn to_scan_config(self) -> Result<ScanConfig, String> {
+    pub fn to_scanners(self) -> Result<Vec<impl Scanner>, String> {
         if self.addresses.is_empty() {
             return Err("Error: Please provide a host target. Example: 10.6.2.211".to_string());
         }
@@ -68,8 +74,14 @@ impl Args {
 
         }
 
-        Ok(
-            ScanConfig { addresses: self.addresses, ports }
-        )
+        let mut scanners = Vec::new();
+
+        for address in self.addresses {
+            let scn = TcpScanner::new(&address, ports.clone(), self.banner)?;
+
+            scanners.push(scn);
+        }
+
+        Ok(scanners)
     }
 }

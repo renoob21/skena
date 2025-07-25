@@ -1,0 +1,15 @@
+[[probe]]
+name = "http"
+ports = [80, 8080]
+payload = "GET / HTTP/1.0\r\n\r\n"
+match_regex = '^HTTP/\d\.\d'
+
+[[probe]]
+name = "ssh"
+ports = [22]
+match_regex = '^SSH-\d\.\d'
+
+[[probe]]
+name = "ftp"
+ports = [21]
+match_regex = '^220 (.*)'
