@@ -1,8 +1,8 @@
-use std::fs;
+use std::{fs, sync::Arc};
 
 use clap::Parser;
 
-use crate::{scanner::{ Scanner, TcpScanner}, PortKind};
+use crate::{prober::ProbeRegistry, scanner::{ Scanner, TcpScanner}, PortKind};
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -45,7 +45,7 @@ fn range_parser(input: &str) -> Result<PortKind, String> {
 
 
 impl Args {
-    pub fn to_scanners(self) -> Result<Vec<impl Scanner>, String> {
+    pub fn to_scanners(self, probe_registry: Arc<ProbeRegistry>) -> Result<Vec<impl Scanner>, String> {
         if self.addresses.is_empty() {
             return Err("Error: Please provide a host target. Example: 10.6.2.211".to_string());
         }
@@ -77,7 +77,8 @@ impl Args {
         let mut scanners = Vec::new();
 
         for address in self.addresses {
-            let scn = TcpScanner::new(&address, ports.clone(), self.banner)?;
+            let probe_registry = probe_registry.clone();
+            let scn = TcpScanner::new(&address, ports.clone(), self.banner, probe_registry)?;
 
             scanners.push(scn);
         }

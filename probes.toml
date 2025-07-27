@@ -8,8 +8,10 @@ match_regex = '^HTTP/\d\.\d'
 name = "ssh"
 ports = [22]
 match_regex = '^SSH-\d\.\d'
+payload=""
 
 [[probe]]
 name = "ftp"
 ports = [21]
 match_regex = '^220 (.*)'
+payload=""
